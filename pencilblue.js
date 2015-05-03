@@ -202,6 +202,8 @@ function PencilBlue(config){
             }
             else {
                 pb.server = http.createServer(function(req, res) {
+                    pb.log.debug(req);
+                    pb.log.debug(res);
                     self.onHttpConnect(req, res);
                 });
             }
