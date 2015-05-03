@@ -1,0 +1,36 @@
+{
+    "uid": "ethan",
+    "name": "Ethan Theme",
+    "description": "A theme for Ethan's site",
+    "version": "0.2.0",
+    "pb_version": "0.4.x",
+    "author": {
+        "name": "PencilBlue",
+        "email": "info@pencilblue.org",
+        "website": "http://pencilblue.org",
+        "contributors": [
+            {
+                "name": "Blake Callens",
+                "email": ""
+            },
+            {
+                "name": "Brian Hyder",
+                "email": ""
+            }
+        ]
+    },
+    "settings": [],
+    "permissions": {
+        "ACCESS_USER": [],
+        "ACCESS_WRITER": [],
+        "ACCESS_EDITOR": [],
+        "ACCESS_MANAGING_EDITOR": []
+    },
+    "main_module": {
+        "path": "ethan.js"
+    },
+    "theme": {
+        "settings": [],
+        "content_templates": []
+    }
+}
