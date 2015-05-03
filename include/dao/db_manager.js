@@ -150,7 +150,6 @@ module.exports = function DBManagerModule(pb) {
          * defer the reporting of an error until the end.
          */
         this.processIndices = function(procedures, cb) {
-            pb.log.info('here');
             if (!util.isArray(procedures)) {
                 cb(new Error('The procedures parameter must be an array of Objects'));
                 return;
