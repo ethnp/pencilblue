@@ -286,13 +286,13 @@ module.exports = function SectionServiceModule(pb) {
      *
      * @method getParentSelectList
      * @param {String|ObjectID} currItem
-     * @param {Function}
+     * @param {Function} cb
      */
     SectionService.prototype.getParentSelectList = function(currItem, cb) {
         cb = cb || currItem;
 
         var where = {
-            type: 'container',
+            type: 'container'
         };
         if (currItem && !util.isFunction(currItem)) {
             where[pb.DAO.getIdField()] = pb.DAO.getNotIdField(currItem);
@@ -304,9 +304,7 @@ module.exports = function SectionServiceModule(pb) {
                 name: 1
             },
             where: where,
-            order: [
-                ['name', pb.DAO.ASC]
-            ]
+            order: {'name': pb.DAO.ASC}
         };
         var dao = new pb.DAO();
         dao.q('section', opts, cb);
@@ -316,7 +314,7 @@ module.exports = function SectionServiceModule(pb) {
      *
      * @static
      * @method trimForType
-     * @param {Object}
+     * @param {Object} navItem
      */
     SectionService.trimForType = function(navItem) {
         if (navItem.type === 'container') {
@@ -348,7 +346,7 @@ module.exports = function SectionServiceModule(pb) {
     /**
      *
      * @method validate
-     * @param {Object}
+     * @param {Object} navItem
      * @param {Function} cb
      */
     SectionService.prototype.validate = function(navItem, cb) {
@@ -414,7 +412,7 @@ module.exports = function SectionServiceModule(pb) {
      *
      * @method validateLinkNavItem
      * @param {Object} navItem
-     * @param {Function}
+     * @param {Function} cb
      */
     SectionService.prototype.validateLinkNavItem = function(navItem, cb) {
         var errors = [];
@@ -692,7 +690,7 @@ module.exports = function SectionServiceModule(pb) {
      *
      * @static
      * @method formatUrl
-     * @param {Object}
+     * @param {Object} navItem
      */
     SectionService.formatUrl = function(navItem) {
         if (util.isString(navItem.link)) {

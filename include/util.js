@@ -115,11 +115,13 @@ Util.escapeRegExp = function(str) {
  * @method merge
  * @param {Object} from
  * @param {Object} to
+ * @return {Object} The 'to' variable
  */
 Util.merge = function(from, to) {
     Util.forEach(from, function(val, propName/*, */) {
         to[propName] = val;
     });
+    return to;
 };
 
 /**
@@ -170,11 +172,19 @@ Util.getTasks = function (iterable, getTaskFunction) {
  * prototype function needs to be called with a specific context.
  * @static
  * @method wrapTask
+ * @param {Function} context The value of "this" for the function to be called
+ * @param {Function} func The function to be executed
+ * @param {Array} [argArray] The arguments to be supplied to the func parameter 
+ * when executed.
  * @return {Function}
  */
-Util.wrapTask = function(context, func) {
+Util.wrapTask = function(context, func, argArray) {
+    if (!util.isArray(argArray)) {
+        argArray = [];
+    }
     return function(callback) {
-        func.call(context, callback);
+        argArray.push(callback);
+        func.apply(context, argArray);
     };
 };
 

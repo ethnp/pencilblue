@@ -19,13 +19,14 @@
 var async = require('async');
 
 module.exports = function BlogModule(pb) {
-    
+
     //pb dependencies
     var util           = pb.util;
+    var config         = pb.config;
     var PluginService  = pb.PluginService;
-    var TopMenu        = require(pb.config.docRoot + '/include/theme/top_menu')(pb);
-    var Comments       = require(pb.config.docRoot + '/include/theme/comments')(pb);
-    var ArticleService = require(pb.config.docRoot + '/include/service/entities/article_service')(pb).ArticleService;
+    var TopMenu        = pb.TopMenuService;
+    var Comments       = pb.CommentService;
+    var ArticleService = pb.ArticleService;
 
     /**
      * Blog page of the pencilblue theme
@@ -48,14 +49,15 @@ module.exports = function BlogModule(pb) {
         var contentService = new pb.ContentService();
         contentService.getSettings(function(err, contentSettings) {
             self.gatherData(function(err, data) {
-                ArticleService.getMetaInfo(data.content[0], function(metaKeywords, metaDescription, metaTitle, metaThumbnail) {
+                var articleService = new pb.ArticleService();
+                articleService.getMetaInfo(data.content[0], function(err, meta) {
 
                     self.ts.reprocess = false;
-                    self.ts.registerLocal('meta_keywords', metaKeywords);
-                    self.ts.registerLocal('meta_desc', data.section.description || metaDescription);
-                    self.ts.registerLocal('meta_title', data.section.name || metaTitle);
-                    self.ts.registerLocal('meta_lang', localizationLanguage);
-                    self.ts.registerLocal('meta_thumbnail', metaThumbnail);
+                    self.ts.registerLocal('meta_keywords', meta.keywords);
+                    self.ts.registerLocal('meta_desc', data.section.description || meta.description);
+                    self.ts.registerLocal('meta_title', data.section.name || meta.title);
+                    self.ts.registerLocal('meta_lang', config.localization.defaultLocale);
+                    self.ts.registerLocal('meta_thumbnail', meta.thumbnail);
                     self.ts.registerLocal('current_url', self.req.url);
                     self.ts.registerLocal('navigation', new pb.TemplateValue(data.nav.navigation, false));
                     self.ts.registerLocal('account_buttons', new pb.TemplateValue(data.nav.accountButtons, false));
@@ -308,7 +310,7 @@ module.exports = function BlogModule(pb) {
         ats.registerLocal('author_position', content.author_position ? content.author_position : '');
         ats.registerLocal('media_body_style', content.media_body_style ? content.media_body_style : '');
         ats.registerLocal('comments', function(flag, cb) {
-           if (content.object_type === 'page' || !contentSettings.allow_comments) {
+           if (content.object_type === 'page' || !contentSettings.allow_comments || !content.allow_comments) {
                cb(null, '');
                return;
            }

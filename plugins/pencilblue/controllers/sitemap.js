@@ -18,7 +18,7 @@
 //dependencies
 var async = require('async');
 
-module.exports = function SiteMapModule(pb) {
+module.exports = function(pb) {
     
     //pb dependencies
     var util = pb.util;
@@ -46,12 +46,12 @@ module.exports = function SiteMapModule(pb) {
                     path: '/'
                 },
                 page: {
-                    where: {publish_date: {$lte: today}},
+                    where: {publish_date: {$lte: today}, draft: {$ne: 1}},
                     weight: '1.0',
                     path: '/page/'
                 },
                 article: {
-                    where: {publish_date: {$lte: today}},
+                    where: {publish_date: {$lte: today}, draft: {$ne: 1}},
                     weight: '1.0',
                     path: '/article/'
                 }

@@ -41,45 +41,8 @@ module.exports = function(pb) {
     //statics
     var SUB_NAV_KEY = 'plugin_settings';
 
-    /**
-     *
-     * @method render
-     *
-     */
-    PluginSettingsFormController.prototype.render = function(cb) {
-        if (this.req.method !== 'GET' && this.req.method !== 'POST') {
-            var data = {
-                code: 405,
-                headers: {
-                    Allow: 'GET, POST'
-                },
-                content: this.ls.get('INVALID_METHOD')
-            };
-            cb(data);
-            return;
-        }
-
-        var self = this;
-        switch(this.req.method) {
-        case 'GET':
-            this.renderGet(cb);
-            break;
-        case 'POST':
-            this.getJSONPostParams(function(err, post) {
-                self.renderPost(post, cb);
-            });
-            break;
-        default:
-            throw new Error(this.ls.get('INVALID_METHOD'));
-        }
-    };
-
-    /**
-     *
-     * @method renderGet
-     *
-     */
-    PluginSettingsFormController.prototype.renderGet = function(cb) {
+    
+    PluginSettingsFormController.prototype.get = function(cb) {
         var self = this;
 
         var uid = this.pathVars.id;
@@ -131,12 +94,17 @@ module.exports = function(pb) {
                 ];
 
                 //setup angular
+                var data = {
+                    plugin: plugin,
+                    settingType: self.getType()
+                };
                 var angularObjects = pb.ClientJs.getAngularObjects({
-                    pills: pb.AdminSubnavService.get(SUB_NAV_KEY, self.ls, null, plugin),
+                    pills: pb.AdminSubnavService.get(SUB_NAV_KEY, self.ls, null, data),
                     tabs: tabs,
                     navigation: pb.AdminNavigation.get(self.session, ['plugins', 'manage'], self.ls),
                     settings: clone,
-                    pluginUID: uid
+                    pluginUID: uid,
+                    type: data.settingType
                 });
 
                 //render page
@@ -147,51 +115,23 @@ module.exports = function(pb) {
             });
         });
     };
-
-    /**
-     *
-     * @method getPageName
-     *
-     */
-    PluginSettingsFormController.prototype.getPageName = function() {
-        return this.plugin.name + ' - ' + this.ls.get('SETTINGS');
-    };
-
-    /**
-     *
-     * @method getSettings
-     *
-     */
-    PluginSettingsFormController.prototype.getSettings = function(uid, cb) {
-        this.pluginService.getSettings(uid, cb);
-    };
-
-    /**
-     *
-     * @method setSettings
-     *
-     */
-    PluginSettingsFormController.prototype.setSettings = function(settings, uid, cb) {
-        this.pluginService.setSettings(settings, uid, cb);
-    };
-
-    /**
-     *
-     * @method renderPost
-     *
-     */
-    PluginSettingsFormController.prototype.renderPost = function(post, cb) {
+    
+    
+    PluginSettingsFormController.prototype.post = function(cb) {
         var self = this;
+        var post = this.body;
 
         //retrieve settings
         var uid = this.pathVars.id;
-        this.getSettings(uid, function(err, settings) {
-            if(util.isError(err) || settings === null) {
-                cb({
+        self.getSettings(uid, function(err, settings) {
+            if(util.isError(err)) {
+                return self.reqHandler.serveError(err);
+            }
+            else if (util.isNullOrUndefined(settings)) {
+                return cb({
                     code: 400,
                     content: pb.BaseController.apiResponse(pb.BaseController.API_ERROR, self.ls.get('INVALID_UID'))
                 });
-                return;
             }
 
             var errors = [];
@@ -200,7 +140,7 @@ module.exports = function(pb) {
                 var currItem = settings[i];
                 var newVal   = post[currItem.name];
                 var type     = PluginSettingsFormController.getValueType(currItem.value);
-                if (newVal === undefined || newVal === null) {
+                if (util.isNullOrUndefined(newVal)) {
                     if (type === 'boolean') {
                         newVal = false;
                     }
@@ -243,14 +183,42 @@ module.exports = function(pb) {
             });
         });
     };
+    
+    /**
+     *
+     * @method getPageName
+     *
+     */
+    PluginSettingsFormController.prototype.getPageName = function() {
+        return this.plugin.name + ' - ' + this.ls.get('SETTINGS');
+    };
 
     /**
      *
-     * @method getBackUrl
+     * @method getSettings
      *
      */
-    PluginSettingsFormController.prototype.getBackUrl = function() {
-        return '/admin/plugins/';
+    PluginSettingsFormController.prototype.getSettings = function(uid, cb) {
+        this.pluginService.getSettings(uid, cb);
+    };
+
+    /**
+     *
+     * @method setSettings
+     *
+     */
+    PluginSettingsFormController.prototype.setSettings = function(settings, uid, cb) {
+        this.pluginService.setSettings(settings, uid, cb);
+    };
+
+
+    /**
+     *
+     * @method getType
+     * @return {String}
+     */
+    PluginSettingsFormController.prototype.getType = function() {
+        return 'plugins';
     };
 
     /**
@@ -258,13 +226,13 @@ module.exports = function(pb) {
      * @method render
      *
      */
-    PluginSettingsFormController.geSubNavItems = function(key, ls, data) {
+    PluginSettingsFormController.getSubNavItems = function(key, ls, data) {
         return [
             {
                 name: 'manage_plugins',
-                title: data.name + ' ' + ls.get('SETTINGS'),
+                title: data.plugin.name + ' ' + ls.get('SETTINGS'),
                 icon: 'chevron-left',
-                href: '/admin/plugins'
+                href: '/admin/' + data.settingType
             }
         ];
     };
@@ -365,7 +333,7 @@ module.exports = function(pb) {
     };
 
     //register admin sub-nav
-    pb.AdminSubnavService.registerFor(SUB_NAV_KEY, PluginSettingsFormController.geSubNavItems);
+    pb.AdminSubnavService.registerFor(SUB_NAV_KEY, PluginSettingsFormController.getSubNavItems);
 
     //exports
     return PluginSettingsFormController;
