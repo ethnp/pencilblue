@@ -126,10 +126,14 @@ module.exports = function IndexModule(pb) {
 
   Index.prototype.onTopic = function(cb) {
       var self = this;
+      var dao = new pb.DAO();
 
       try {
+
           pb.DAO.getObjectId(this.pathVars.customUrl);
+
           dao.loadById(self.pathVars.customUrl, 'topic', function(err, topic) {
+
               if (util.isError(err) || topic == null) {
                   throw(err);
               }
@@ -141,6 +145,9 @@ module.exports = function IndexModule(pb) {
       catch(e) {
           var dao = new pb.DAO();
           dao.loadByValues({name: self.pathVars.customUrl}, 'topic', function(err, topic) {
+              console.log('\n');
+              console.log(err);
+              console.log('\n');
               if (util.isError(err) || topic == null) {
 
               }
@@ -168,7 +175,7 @@ module.exports = function IndexModule(pb) {
                   self.ts.registerLocal('meta_keywords', metaKeywords);
                   self.ts.registerLocal('meta_desc', metaDescription);
                   self.ts.registerLocal('meta_title', metaTitle);
-                  self.ts.registerLocal('meta_lang', localizationLanguage);
+                  //self.ts.registerLocal('meta_lang', localizationLanguage);
                   self.ts.registerLocal('meta_thumbnail', metaThumbnail);
                   self.ts.registerLocal('current_url', self.req.url);
                   self.ts.registerLocal('navigation', new pb.TemplateValue(data.nav.navigation, false));
